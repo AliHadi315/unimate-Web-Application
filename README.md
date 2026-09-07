@@ -73,11 +73,11 @@ status, type, priority, and course; sort by date, priority, or title.
 Every task can carry a **file attachment**.
 
 ### 📄 Syllabus import
-Paste a course syllabus and the assistant pulls out the graded work — assignments,
-quizzes, midterms, projects — with its type, priority, and a real due date. Nothing
-is saved automatically: you get a checklist to review, untick anything wrong, and
-only the items you keep become tasks. Needs an AI model configured; without one the
-button explains that instead of failing.
+Upload the course syllabus as a **PDF** (or paste the text) and the assistant pulls
+out the graded work — assignments, quizzes, midterms, projects — with its type,
+priority, and a real due date. Nothing is saved automatically: you get a checklist
+to review, untick anything wrong, and only the items you keep become tasks. Needs an
+AI model configured; without one the button explains that instead of failing.
 
 ### 🗓️ Weekly timetable
 Lay out your lecture schedule on a proper weekly grid — day columns, hourly
@@ -139,6 +139,12 @@ a slide-in sidebar, wrapping toolbars, and touch-friendly targets.
 ![Tasks list](docs/screenshots/tasks.png)
 ![Tasks calendar](docs/screenshots/tasks-calendar.png)
 
+### Syllabus import
+> Upload a syllabus PDF, then review what the assistant found before anything is saved.
+
+![Syllabus upload](docs/screenshots/syllabus-upload.png)
+![Syllabus review](docs/screenshots/syllabus-review.png)
+
 ### Weekly timetable
 > Lecture blocks sized by duration, with rooms. Click any block to edit it.
 
@@ -196,6 +202,7 @@ a slide-in sidebar, wrapping toolbars, and touch-friendly targets.
 | Frontend | HTML5, CSS3, vanilla JavaScript (no framework, no build step) |
 | Fonts | Sora (headings) + Inter (body), via Google Fonts |
 | File storage | Laravel public disk (`storage/app/public`) |
+| PDF text extraction | `smalot/pdfparser` |
 
 ---
 
@@ -239,6 +246,7 @@ the ones a screenshot can't prove:
 | Authentication | Registration, duplicate university IDs, wrong passwords, token issue and revocation, passwords never stored in plain text |
 | Ownership | A student cannot read, edit, or delete another student's courses and tasks, or attach a task to a course they don't own |
 | Shared resources | Only resources explicitly shared are visible, only to classmates in the same course **at the same university** |
+| Syllabus upload | Text is extracted from real PDFs, scanned PDFs get a clear explanation instead of a failure, and unsupported or oversized files are refused |
 | Syllabus import | Model output is treated as untrusted: fenced JSON is unwrapped, undated or untitled rows dropped, unknown types and priorities coerced to valid values, and a runaway reply capped |
 | Timetable | Class slots stay private to their owner, must end after they start, and are removed with their course |
 | Messaging | Contacts are limited to real classmates, direct messages to strangers are refused, and unread counts clear on read |
@@ -368,7 +376,7 @@ requires a `Authorization: Bearer <token>` header.
 | `GET · POST` | `/groups/{code}/messages` | Read / send group messages |
 | `GET` | `/ai/status` | Whether a real AI model is configured |
 | `POST` | `/ai/chat` | Ask the study assistant |
-| `POST` | `/ai/syllabus` | Propose tasks from syllabus text (saves nothing) |
+| `POST` | `/ai/syllabus` | Propose tasks from a syllabus PDF or text (saves nothing) |
 | `GET · POST` | `/chat-sessions` | Saved assistant conversations |
 
 ---

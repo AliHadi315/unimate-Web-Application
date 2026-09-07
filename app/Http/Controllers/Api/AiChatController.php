@@ -6,6 +6,8 @@ use Anthropic\Client;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Smalot\PdfParser\Parser as PdfParser;
 
 class AiChatController extends Controller
 {
@@ -85,12 +87,25 @@ class AiChatController extends Controller
 
         $validated = $request->validate([
             'course_id' => ['required', 'integer', 'exists:courses,id'],
-            // ponytail: plain text only — paste it or upload a text file.
-            // Add a PDF parser here if reading the PDF directly ever matters.
-            'text'      => ['required', 'string', 'min:40', 'max:40000'],
+            'text'      => ['nullable', 'string', 'max:40000'],
+            'file'      => ['nullable', 'file', 'max:10240', 'mimes:pdf,txt,md,csv'],
         ]);
 
         $course = $request->user()->courses()->findOrFail($validated['course_id']);
+
+        $text = $request->hasFile('file')
+            ? $this->readSyllabusFile($request->file('file'))
+            : trim((string) ($validated['text'] ?? ''));
+
+        if (mb_strlen($text) < 40) {
+            return response()->json([
+                'message' => $request->hasFile('file')
+                    ? "There's almost no text in that file. If it is a scanned PDF the pages are images, so copy the schedule and paste it instead."
+                    : 'Paste a bit more of the syllabus — the schedule with dates is the part that matters.',
+            ], 422);
+        }
+
+        $text = mb_substr($text, 0, 40000);
 
         try {
             $client = new Client(apiKey: config('services.anthropic.key'));
@@ -99,7 +114,7 @@ class AiChatController extends Controller
                 model: config('services.anthropic.model'),
                 maxTokens: 4096,
                 system: $this->syllabusPrompt($course->code, $course->name),
-                messages: [['role' => 'user', 'content' => $validated['text']]],
+                messages: [['role' => 'user', 'content' => $text]],
             );
 
             $raw = '';
@@ -115,6 +130,48 @@ class AiChatController extends Controller
         }
 
         return response()->json(['tasks' => $this->parseSyllabusTasks($raw)]);
+    }
+
+    /*  Pull plain text out of an uploaded syllabus  */
+
+    private function readSyllabusFile(UploadedFile $file): string
+    {
+        $path = $file->getRealPath();
+
+        if (strtolower((string) $file->getClientOriginalExtension()) !== 'pdf'
+            && $file->getMimeType() !== 'application/pdf') {
+            return trim((string) file_get_contents($path));
+        }
+
+        try {
+            $pages = (new PdfParser())->parseFile($path)->getPages();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return '';
+        }
+
+        $text = '';
+        foreach ($pages as $page) {
+            $text .= $page->getText()."\n";
+
+            // Syllabi are short; stop early so a huge PDF cannot stall the request
+            if (mb_strlen($text) > 40000) {
+                break;
+            }
+        }
+
+        return $this->tidy($text);
+    }
+
+    /*  PDF extraction leaves ragged spacing that would just burn tokens  */
+
+    private function tidy(string $text): string
+    {
+        $text = preg_replace('/[ \\t]{2,}/', ' ', $text);
+        $text = preg_replace('/\\n{3,}/', "\\n\\n", $text);
+
+        return trim($text);
     }
 
     private function syllabusPrompt(string $code, string $name): string

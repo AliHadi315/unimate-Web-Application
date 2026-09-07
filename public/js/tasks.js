@@ -342,6 +342,7 @@ function openSyllabusModal() {
         allCourses.map(c => `<option value="${c.id}">${escapeHtml(c.code)} — ${escapeHtml(c.name)}</option>`).join('');
     document.getElementById('s-text').value = '';
     document.getElementById('s-file').value = '';
+    clearSyllabusFile();
 
     backToSyllabusInput();
     document.getElementById('syllabus-error').classList.remove('show');
@@ -357,22 +358,41 @@ function backToSyllabusInput() {
     document.getElementById('syllabus-back-btn').classList.add('hidden');
 }
 
+// PDFs are read on the server; text files are shown here so they can be edited first
+let syllabusFile = null;
+
 async function loadSyllabusFile(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 200 * 1024) {
-        showToast('File too large — 200 KB max.', 'error');
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('File too large — 10 MB max.', 'error');
+        e.target.value = '';
         return;
     }
 
-    try {
-        document.getElementById('s-text').value = (await file.text()).slice(0, 40000);
-    } catch (err) {
-        showToast('Could not read that file.', 'error');
-    } finally {
-        e.target.value = '';
+    const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+
+    if (isPdf) {
+        syllabusFile = file;
+        document.getElementById('s-file-name').textContent = file.name;
+        document.getElementById('s-file-bar').classList.remove('hidden');
+        document.getElementById('s-text').value = '';
+    } else {
+        try {
+            document.getElementById('s-text').value = (await file.text()).slice(0, 40000);
+            clearSyllabusFile();
+        } catch (err) {
+            showToast('Could not read that file.', 'error');
+        }
     }
+
+    e.target.value = '';
+}
+
+function clearSyllabusFile() {
+    syllabusFile = null;
+    document.getElementById('s-file-bar').classList.add('hidden');
 }
 
 async function analyzeSyllabus() {
@@ -381,17 +401,20 @@ async function analyzeSyllabus() {
 
     const v1   = validateRequired('s-course', 'err-s-course');
     const text = document.getElementById('s-text').value.trim();
-    const v2   = text.length >= 40;
+    const v2   = syllabusFile !== null || text.length >= 40;
 
     document.getElementById('err-s-text').classList.toggle('show', !v2);
     document.getElementById('s-text').style.borderColor = v2 ? '' : 'var(--red)';
     if (!v1 || !v2) return;
 
-    const btn = document.getElementById('syllabus-analyze-btn');
-    setLoading(btn, true, 'Reading…');
+    const courseId = parseInt(document.getElementById('s-course').value);
+    const btn      = document.getElementById('syllabus-analyze-btn');
+    setLoading(btn, true, syllabusFile ? 'Reading the PDF…' : 'Reading…');
 
     try {
-        const r = await AiAPI.syllabus(parseInt(document.getElementById('s-course').value), text);
+        const r = syllabusFile
+            ? await AiAPI.syllabusFile(courseId, syllabusFile)
+            : await AiAPI.syllabus(courseId, text);
         proposedTasks = r.tasks || [];
         renderProposedTasks();
     } catch (err) {

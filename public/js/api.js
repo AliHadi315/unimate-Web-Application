@@ -172,7 +172,13 @@ const SharedResourcesAPI = {
 const AiAPI = {
     status()       { return apiFetch('/ai/status'); },
     chat(messages) { return apiFetch('/ai/chat', { method: 'POST', body: { messages } }); },
-    syllabus(courseId, text) { return apiFetch('/ai/syllabus', { method: 'POST', body: { course_id: courseId, text } }); },
+    syllabus(courseId, text)   { return apiFetch('/ai/syllabus', { method: 'POST', body: { course_id: courseId, text } }); },
+    syllabusFile(courseId, file) {
+        const fd = new FormData();
+        fd.append('course_id', courseId);
+        fd.append('file', file);
+        return apiUpload('/ai/syllabus', fd);
+    },
 };
 
 const ChatAPI = {

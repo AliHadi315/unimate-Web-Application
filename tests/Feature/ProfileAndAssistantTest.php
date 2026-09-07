@@ -145,7 +145,11 @@ class ProfileAndAssistantTest extends TestCase
         $this->actingAs($me, 'sanctum')->postJson('/api/ai/syllabus', [
             'course_id' => $course->id,
             'text'      => 'too short',
-        ])->assertStatus(422)->assertJsonValidationErrors('text');
+        ])->assertStatus(422)
+          ->assertJson(fn ($json) => $json->where(
+              'message',
+              fn ($m) => str_contains($m, 'Paste a bit more')
+          )->etc());
     }
 
     public function test_the_assistant_needs_both_a_key_and_a_model(): void
