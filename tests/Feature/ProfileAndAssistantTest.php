@@ -109,6 +109,45 @@ class ProfileAndAssistantTest extends TestCase
         ])->assertStatus(503);
     }
 
+    public function test_syllabus_import_is_unavailable_without_a_model(): void
+    {
+        $me     = $this->student('20230099');
+        $course = $this->courseFor($me, 'CSC400');
+
+        config(['services.anthropic.key' => null, 'services.anthropic.model' => null]);
+
+        $this->actingAs($me, 'sanctum')->postJson('/api/ai/syllabus', [
+            'course_id' => $course->id,
+            'text'      => str_repeat('Week 1 lecture, week 2 assignment due. ', 5),
+        ])->assertStatus(503);
+    }
+
+    public function test_syllabus_import_rejects_a_course_you_do_not_own(): void
+    {
+        $me    = $this->student('20230099');
+        $other = $this->student('20230150', 'Maya Karim');
+
+        config(['services.anthropic.key' => 'a-key', 'services.anthropic.model' => 'a-model']);
+
+        $this->actingAs($me, 'sanctum')->postJson('/api/ai/syllabus', [
+            'course_id' => $this->courseFor($other, 'BIO101')->id,
+            'text'      => str_repeat('Week 1 lecture, week 2 assignment due. ', 5),
+        ])->assertNotFound();
+    }
+
+    public function test_syllabus_import_needs_enough_text_to_work_with(): void
+    {
+        $me     = $this->student('20230099');
+        $course = $this->courseFor($me, 'CSC400');
+
+        config(['services.anthropic.key' => 'a-key', 'services.anthropic.model' => 'a-model']);
+
+        $this->actingAs($me, 'sanctum')->postJson('/api/ai/syllabus', [
+            'course_id' => $course->id,
+            'text'      => 'too short',
+        ])->assertStatus(422)->assertJsonValidationErrors('text');
+    }
+
     public function test_the_assistant_needs_both_a_key_and_a_model(): void
     {
         $me = $this->student('20230099');

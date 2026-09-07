@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('tasks/{task}/toggle',  [TaskController::class, 'toggle']);
     Route::get('ai/status',              [AiChatController::class, 'status']);
     Route::post('ai/chat',               [AiChatController::class, 'chat']);
+    Route::post('ai/syllabus',           [AiChatController::class, 'syllabus']);
     Route::put('auth/profile',           [ProfileController::class, 'update']);
     Route::post('auth/avatar',           [ProfileController::class, 'avatar']);
     Route::post('uploads',               [UploadController::class, 'store']);

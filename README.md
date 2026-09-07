@@ -72,6 +72,13 @@ completion state — in a **list view** or a **monthly calendar**. Filter by
 status, type, priority, and course; sort by date, priority, or title.
 Every task can carry a **file attachment**.
 
+### 📄 Syllabus import
+Paste a course syllabus and the assistant pulls out the graded work — assignments,
+quizzes, midterms, projects — with its type, priority, and a real due date. Nothing
+is saved automatically: you get a checklist to review, untick anything wrong, and
+only the items you keep become tasks. Needs an AI model configured; without one the
+button explains that instead of failing.
+
 ### 🗓️ Weekly timetable
 Lay out your lecture schedule on a proper weekly grid — day columns, hourly
 guide lines, and blocks sized to how long each class actually runs, with the
@@ -232,6 +239,7 @@ the ones a screenshot can't prove:
 | Authentication | Registration, duplicate university IDs, wrong passwords, token issue and revocation, passwords never stored in plain text |
 | Ownership | A student cannot read, edit, or delete another student's courses and tasks, or attach a task to a course they don't own |
 | Shared resources | Only resources explicitly shared are visible, only to classmates in the same course **at the same university** |
+| Syllabus import | Model output is treated as untrusted: fenced JSON is unwrapped, undated or untitled rows dropped, unknown types and priorities coerced to valid values, and a runaway reply capped |
 | Timetable | Class slots stay private to their owner, must end after they start, and are removed with their course |
 | Messaging | Contacts are limited to real classmates, direct messages to strangers are refused, and unread counts clear on read |
 | Group chats | Rooms are restricted to enrolled students and never leak across universities |
@@ -280,7 +288,7 @@ ANTHROPIC_MODEL=your-model-id
 ```
 
 The backend sends the model a summary of your courses and tasks so its answers
-stay grounded in your real data. When the key or model is missing — or the API
+stay grounded in your real data. The same key powers syllabus import. When the key or model is missing — or the API
 call fails — the assistant transparently falls back to the built-in responses,
 so the app never breaks in a demo.
 
@@ -360,6 +368,7 @@ requires a `Authorization: Bearer <token>` header.
 | `GET · POST` | `/groups/{code}/messages` | Read / send group messages |
 | `GET` | `/ai/status` | Whether a real AI model is configured |
 | `POST` | `/ai/chat` | Ask the study assistant |
+| `POST` | `/ai/syllabus` | Propose tasks from syllabus text (saves nothing) |
 | `GET · POST` | `/chat-sessions` | Saved assistant conversations |
 
 ---
@@ -419,7 +428,6 @@ Render, or classic cPanel shared hosting.
 - Real-time messaging over WebSockets (Laravel Reverb) instead of polling
 - Exporting deadlines to Google Calendar (iCal feed)
 - Subtasks and checklists inside large projects
-- Generating a task list automatically from an uploaded syllabus
 
 ---
 

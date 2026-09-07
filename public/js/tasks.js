@@ -13,6 +13,7 @@ const PRIORITY_BADGE = { High: 'badge-red', Medium: 'badge-amber', Low: 'badge-g
 document.addEventListener('DOMContentLoaded', async () => {
     if (!requireAuth()) return;
     renderSidebar('tasks.html');
+    document.getElementById('s-file').addEventListener('change', loadSyllabusFile);
     await loadData();
 });
 
@@ -323,5 +324,155 @@ async function confirmDeleteTask() {
         showToast('Failed to delete task.', 'error');
     } finally {
         setLoading(btn, false);
+    }
+}
+
+/*  SYLLABUS IMPORT  */
+
+let proposedTasks = [];
+
+function openSyllabusModal() {
+    if (allCourses.length === 0) {
+        showToast('Add a course before importing a syllabus.', 'error');
+        return;
+    }
+
+    document.getElementById('s-course').innerHTML =
+        '<option value="">— Select a course —</option>' +
+        allCourses.map(c => `<option value="${c.id}">${escapeHtml(c.code)} — ${escapeHtml(c.name)}</option>`).join('');
+    document.getElementById('s-text').value = '';
+    document.getElementById('s-file').value = '';
+
+    backToSyllabusInput();
+    document.getElementById('syllabus-error').classList.remove('show');
+    document.querySelectorAll('#modal-syllabus .form-error').forEach(e => e.classList.remove('show'));
+    openModal('modal-syllabus');
+}
+
+function backToSyllabusInput() {
+    document.getElementById('syllabus-input-step').classList.remove('hidden');
+    document.getElementById('syllabus-result-step').classList.add('hidden');
+    document.getElementById('syllabus-analyze-btn').classList.remove('hidden');
+    document.getElementById('syllabus-import-btn').classList.add('hidden');
+    document.getElementById('syllabus-back-btn').classList.add('hidden');
+}
+
+async function loadSyllabusFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 200 * 1024) {
+        showToast('File too large — 200 KB max.', 'error');
+        return;
+    }
+
+    try {
+        document.getElementById('s-text').value = (await file.text()).slice(0, 40000);
+    } catch (err) {
+        showToast('Could not read that file.', 'error');
+    } finally {
+        e.target.value = '';
+    }
+}
+
+async function analyzeSyllabus() {
+    const errBox = document.getElementById('syllabus-error');
+    errBox.classList.remove('show');
+
+    const v1   = validateRequired('s-course', 'err-s-course');
+    const text = document.getElementById('s-text').value.trim();
+    const v2   = text.length >= 40;
+
+    document.getElementById('err-s-text').classList.toggle('show', !v2);
+    document.getElementById('s-text').style.borderColor = v2 ? '' : 'var(--red)';
+    if (!v1 || !v2) return;
+
+    const btn = document.getElementById('syllabus-analyze-btn');
+    setLoading(btn, true, 'Reading…');
+
+    try {
+        const r = await AiAPI.syllabus(parseInt(document.getElementById('s-course').value), text);
+        proposedTasks = r.tasks || [];
+        renderProposedTasks();
+    } catch (err) {
+        errBox.textContent = err.message || 'Could not read that syllabus.';
+        errBox.classList.add('show');
+    } finally {
+        setLoading(btn, false);
+    }
+}
+
+function renderProposedTasks() {
+    const list  = document.getElementById('syllabus-list');
+    const found = document.getElementById('syllabus-found');
+
+    document.getElementById('syllabus-input-step').classList.add('hidden');
+    document.getElementById('syllabus-result-step').classList.remove('hidden');
+    document.getElementById('syllabus-analyze-btn').classList.add('hidden');
+    document.getElementById('syllabus-back-btn').classList.remove('hidden');
+
+    if (proposedTasks.length === 0) {
+        found.textContent = 'Nothing found';
+        document.getElementById('syllabus-import-btn').classList.add('hidden');
+        list.innerHTML = `
+            <div class="empty-state" style="padding:30px 20px">
+                <h4>No dated work found</h4>
+                <p>The text needs a schedule with real dates. Try pasting the week-by-week section.</p>
+            </div>`;
+        return;
+    }
+
+    found.textContent = `${proposedTasks.length} item${proposedTasks.length > 1 ? 's' : ''} found — untick anything you don't want`;
+    document.getElementById('syllabus-import-btn').classList.remove('hidden');
+
+    list.innerHTML = proposedTasks.map((t, i) => `
+        <label class="proposed-row" for="prop-${i}">
+            <input type="checkbox" id="prop-${i}" class="task-checkbox" checked/>
+            <div class="task-info">
+                <div class="task-title">${escapeHtml(t.title)}</div>
+                <div class="task-meta">
+                    <span class="text-sm text-muted">${t.type}</span>
+                    <span class="text-sm text-muted">·</span>
+                    <span class="text-sm text-muted">Due ${formatDate(t.due_date)}</span>
+                </div>
+            </div>
+            <span class="badge ${PRIORITY_BADGE[t.priority] || 'badge-gray'}">${t.priority}</span>
+        </label>`).join('');
+}
+
+function toggleAllProposed() {
+    const boxes = document.querySelectorAll('#syllabus-list input[type="checkbox"]');
+    const allOn = [...boxes].every(b => b.checked);
+    boxes.forEach(b => { b.checked = !allOn; });
+}
+
+async function importProposedTasks() {
+    const courseId = parseInt(document.getElementById('s-course').value);
+    const picked   = proposedTasks.filter((_, i) => document.getElementById('prop-' + i).checked);
+
+    if (picked.length === 0) {
+        showToast('Nothing selected.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('syllabus-import-btn');
+    setLoading(btn, true, 'Adding…');
+
+    let added = 0;
+    for (const t of picked) {
+        try {
+            allTasks.push(await TasksAPI.create({ ...t, course_id: courseId, is_completed: false }));
+            added++;
+        } catch (err) { /* keep going; the total is reported below */ }
+    }
+
+    setLoading(btn, false);
+    closeModal('modal-syllabus');
+    renderTasks();
+
+    if (added === picked.length) {
+        showToast(`Added ${added} task${added > 1 ? 's' : ''}.`, 'success');
+    } else {
+        showToast(`Added ${added} of ${picked.length}. Some could not be saved.`, 'error');
     }
 }

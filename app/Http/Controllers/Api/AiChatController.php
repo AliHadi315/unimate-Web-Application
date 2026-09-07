@@ -73,6 +73,138 @@ class AiChatController extends Controller
         }
     }
 
+    /*  POST /api/ai/syllabus — propose tasks from a syllabus, saving nothing  */
+
+    public function syllabus(Request $request): JsonResponse
+    {
+        abort_unless(
+            $this->configured(),
+            503,
+            "The AI assistant isn't set up on this server, so syllabus import is unavailable."
+        );
+
+        $validated = $request->validate([
+            'course_id' => ['required', 'integer', 'exists:courses,id'],
+            // ponytail: plain text only — paste it or upload a text file.
+            // Add a PDF parser here if reading the PDF directly ever matters.
+            'text'      => ['required', 'string', 'min:40', 'max:40000'],
+        ]);
+
+        $course = $request->user()->courses()->findOrFail($validated['course_id']);
+
+        try {
+            $client = new Client(apiKey: config('services.anthropic.key'));
+
+            $response = $client->messages->create(
+                model: config('services.anthropic.model'),
+                maxTokens: 4096,
+                system: $this->syllabusPrompt($course->code, $course->name),
+                messages: [['role' => 'user', 'content' => $validated['text']]],
+            );
+
+            $raw = '';
+            foreach ($response->content as $block) {
+                if ($block->type === 'text') {
+                    $raw .= $block->text;
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => 'The AI service is unavailable right now.'], 502);
+        }
+
+        return response()->json(['tasks' => $this->parseSyllabusTasks($raw)]);
+    }
+
+    private function syllabusPrompt(string $code, string $name): string
+    {
+        $today = now()->toDateString();
+        $year  = now()->year;
+
+        return <<<PROMPT
+        You read university syllabi and pull out the graded work a student has to hand in or sit.
+
+        The syllabus is for {$code} — {$name}. Today is {$today}.
+
+        Return ONLY a JSON array, no prose and no code fences. Each element must be:
+        {"title": string, "type": "Assignment"|"Exam"|"Project", "priority": "Low"|"Medium"|"High", "due_date": "YYYY-MM-DD"}
+
+        Rules:
+        - One entry per graded item: assignments, quizzes, midterms, finals, projects, presentations.
+        - Quizzes, midterms and finals are "Exam". Multi-week deliverables are "Project". Everything else is "Assignment".
+        - Weight the priority by how much the item counts for: finals and big projects are "High".
+        - Only include an item if you can resolve a real calendar date. If the syllabus says a weekday or
+          "Week 5" with no date anywhere, leave that item out rather than guessing.
+        - If a date has no year, assume the academic year around {$year}.
+        - Keep titles short and specific, like "Midterm Exam" or "Assignment 2 — Normalization".
+        - Return [] if the text is not a syllabus or lists no dated work.
+        PROMPT;
+    }
+
+    /*  Model output is untrusted: keep only well-formed, in-enum, really-dated rows  */
+
+    public function parseSyllabusTasks(string $raw): array
+    {
+        $raw = trim($raw);
+
+        // Tolerate ```json fences and any stray prose around the array
+        $start = strpos($raw, '[');
+        $end   = strrpos($raw, ']');
+        if ($start === false || $end === false || $end < $start) {
+            return [];
+        }
+
+        $decoded = json_decode(substr($raw, $start, $end - $start + 1), true);
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        $types      = ['Assignment', 'Exam', 'Project'];
+        $priorities = ['Low', 'Medium', 'High'];
+        $tasks      = [];
+
+        foreach ($decoded as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $title = trim((string) ($item['title'] ?? ''));
+            $date  = trim((string) ($item['due_date'] ?? ''));
+
+            if ($title === '' || ! $this->isRealDate($date)) {
+                continue;
+            }
+
+            $type     = $item['type'] ?? '';
+            $priority = $item['priority'] ?? '';
+
+            $tasks[] = [
+                'title'    => mb_substr($title, 0, 255),
+                'type'     => in_array($type, $types, true) ? $type : 'Assignment',
+                'priority' => in_array($priority, $priorities, true) ? $priority : 'Medium',
+                'due_date' => $date,
+            ];
+
+            if (count($tasks) === 40) {
+                break;
+            }
+        }
+
+        return $tasks;
+    }
+
+    private function isRealDate(string $date): bool
+    {
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return false;
+        }
+
+        [$y, $m, $d] = array_map('intval', explode('-', $date));
+
+        return checkdate($m, $d, $y);
+    }
+
     /*  Give the model the student's real data so answers are grounded  */
 
     private function buildSystemPrompt(string $name, $courses, $tasks): string

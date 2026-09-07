@@ -172,6 +172,7 @@ const SharedResourcesAPI = {
 const AiAPI = {
     status()       { return apiFetch('/ai/status'); },
     chat(messages) { return apiFetch('/ai/chat', { method: 'POST', body: { messages } }); },
+    syllabus(courseId, text) { return apiFetch('/ai/syllabus', { method: 'POST', body: { course_id: courseId, text } }); },
 };
 
 const ChatAPI = {

@@ -388,6 +388,10 @@ select.form-control{cursor:pointer}textarea.form-control{resize:vertical;min-hei
 .bubble.ai .bubble-attach{border-bottom-color:var(--border)}
 .bubble-attach svg{width:12px;height:12px;flex-shrink:0}
 
+.proposed-row{display:flex;align-items:center;gap:12px;padding:11px 6px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.proposed-row:last-child{border-bottom:none}
+.proposed-row:hover{background:var(--blue-light);border-radius:var(--radius-sm)}
+
 /* ===== TIMETABLE ===== */
 .tt-scroll{overflow-x:auto}
 .tt-grid{display:grid;column-gap:8px;min-width:720px;position:relative}
