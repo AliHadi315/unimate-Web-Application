@@ -13,7 +13,7 @@ class AuthTest extends TestCase
     public function test_a_student_can_register_and_receives_a_token(): void
     {
         $response = $this->postJson('/api/auth/register', [
-            'full_name'             => 'Ali Sirbali',
+            'full_name'             => 'Ali Hadi Meselmani',
             'university_id'         => '20230099',
             'university_name'       => 'Al Maaref University',
             'country'               => 'Lebanon',
@@ -22,7 +22,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertCreated()
-            ->assertJsonPath('user.fullName', 'Ali Sirbali')
+            ->assertJsonPath('user.fullName', 'Ali Hadi Meselmani')
             ->assertJsonStructure(['user' => ['id', 'universityId', 'avatarUrl'], 'token']);
 
         $this->assertDatabaseHas('users', ['university_id' => '20230099']);
@@ -31,7 +31,7 @@ class AuthTest extends TestCase
     public function test_the_password_is_never_returned_or_stored_in_plain_text(): void
     {
         $this->postJson('/api/auth/register', [
-            'full_name'             => 'Ali Sirbali',
+            'full_name'             => 'Ali Hadi Meselmani',
             'university_id'         => '20230099',
             'university_name'       => 'Al Maaref University',
             'country'               => 'Lebanon',
@@ -59,7 +59,7 @@ class AuthTest extends TestCase
     public function test_registration_requires_matching_password_confirmation(): void
     {
         $this->postJson('/api/auth/register', [
-            'full_name'             => 'Ali Sirbali',
+            'full_name'             => 'Ali Hadi Meselmani',
             'university_id'         => '20230099',
             'university_name'       => 'Al Maaref University',
             'country'               => 'Lebanon',

@@ -19,7 +19,7 @@ class DemoSeeder extends Seeder
 
         $me = User::updateOrCreate(
             ['university_id' => '20230099'],
-            ['full_name' => 'Ali Sirbali', 'university_name' => $uni, 'country' => 'Lebanon', 'password' => Hash::make('test1234')]
+            ['full_name' => 'Ali Hadi Meselmani', 'university_name' => $uni, 'country' => 'Lebanon', 'password' => Hash::make('test1234')]
         );
         $maya = User::updateOrCreate(
             ['university_id' => '20230150'],

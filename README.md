@@ -244,7 +244,7 @@ This creates three students at *Al Maaref University* (all with the password
 
 | University ID | Name | Courses |
 |---|---|---|
-| `20230099` | Ali Sirbali | CSC400, CSC300, CSC310, MTH201, ENG105 |
+| `20230099` | Ali Hadi Meselmani | CSC400, CSC300, CSC310, MTH201, ENG105 |
 | `20230150` | Maya Karim | CSC400, CSC300 |
 | `20230188` | Omar Saad | CSC400 |
 

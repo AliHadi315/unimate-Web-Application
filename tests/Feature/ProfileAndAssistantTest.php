@@ -16,12 +16,12 @@ class ProfileAndAssistantTest extends TestCase
         $me = $this->student('20230099');
 
         $this->actingAs($me, 'sanctum')->putJson('/api/auth/profile', [
-            'full_name'       => 'Ali Sirbali',
+            'full_name'       => 'Ali Hadi Meselmani',
             'country'         => 'Lebanon',
             'university_name' => 'Al Maaref University',
-        ])->assertOk()->assertJsonPath('user.fullName', 'Ali Sirbali');
+        ])->assertOk()->assertJsonPath('user.fullName', 'Ali Hadi Meselmani');
 
-        $this->assertDatabaseHas('users', ['id' => $me->id, 'full_name' => 'Ali Sirbali']);
+        $this->assertDatabaseHas('users', ['id' => $me->id, 'full_name' => 'Ali Hadi Meselmani']);
     }
 
     public function test_changing_the_password_requires_the_current_one(): void
