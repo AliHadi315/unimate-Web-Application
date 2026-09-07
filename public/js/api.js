@@ -98,6 +98,13 @@ const TasksAPI = {
     remove(id)    { return apiFetch('/tasks/' + id,             { method: 'DELETE' }); },
 };
 
+const LecturesAPI = {
+    list()        { return apiFetch('/lectures'); },
+    create(d)     { return apiFetch('/lectures',       { method: 'POST',   body: d }); },
+    update(id, d) { return apiFetch('/lectures/' + id, { method: 'PUT',    body: d }); },
+    remove(id)    { return apiFetch('/lectures/' + id, { method: 'DELETE' }); },
+};
+
 const ResourcesAPI = {
     list()        { return apiFetch('/resources'); },
     create(d)     { return apiFetch('/resources',       { method: 'POST',   body: d }); },

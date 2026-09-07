@@ -72,6 +72,12 @@ completion state — in a **list view** or a **monthly calendar**. Filter by
 status, type, priority, and course; sort by date, priority, or title.
 Every task can carry a **file attachment**.
 
+### 🗓️ Weekly timetable
+Lay out your lecture schedule on a proper weekly grid — day columns, hourly
+guide lines, and blocks sized to how long each class actually runs, with the
+room number on every block. Weekend columns appear only if you have classes
+then, and clicking any block edits it.
+
 ### 🗂️ Study resources — private or shared
 Store notes, links, and uploaded files per course. Tick **"share with
 classmates"** and your resource becomes visible to everyone at your university
@@ -126,6 +132,11 @@ a slide-in sidebar, wrapping toolbars, and touch-friendly targets.
 ![Tasks list](docs/screenshots/tasks.png)
 ![Tasks calendar](docs/screenshots/tasks-calendar.png)
 
+### Weekly timetable
+> Lecture blocks sized by duration, with rooms. Click any block to edit it.
+
+![Timetable](docs/screenshots/timetable.png)
+
 ### Course group chat
 > One room per course code, with classmates listed underneath for direct messages.
 
@@ -154,17 +165,17 @@ a slide-in sidebar, wrapping toolbars, and touch-friendly targets.
 ### Dark mode
 > The whole interface adapts — one click in the sidebar.
 
-| Dashboard | Courses |
-|---|---|
-| ![Dashboard dark](docs/screenshots/dashboard-dark.png) | ![Courses dark](docs/screenshots/courses-dark.png) |
+| Dashboard | Courses | Timetable |
+|---|---|---|
+| ![Dashboard dark](docs/screenshots/dashboard-dark.png) | ![Courses dark](docs/screenshots/courses-dark.png) | ![Timetable dark](docs/screenshots/timetable-dark.png) |
 
 ### Responsive
 > On phones the sidebar and chat panels become slide-in drawers, filters stack,
 > and task rows wrap instead of overflowing.
 
-| Dashboard | Tasks | Group chat |
-|---|---|---|
-| ![Mobile dashboard](docs/screenshots/mobile-dashboard.png) | ![Mobile tasks](docs/screenshots/mobile-tasks.png) | ![Mobile chat](docs/screenshots/mobile-group.png) |
+| Dashboard | Tasks | Timetable | Group chat |
+|---|---|---|---|
+| ![Mobile dashboard](docs/screenshots/mobile-dashboard.png) | ![Mobile tasks](docs/screenshots/mobile-tasks.png) | ![Mobile timetable](docs/screenshots/mobile-timetable.png) | ![Mobile chat](docs/screenshots/mobile-group.png) |
 
 ---
 
@@ -221,6 +232,7 @@ the ones a screenshot can't prove:
 | Authentication | Registration, duplicate university IDs, wrong passwords, token issue and revocation, passwords never stored in plain text |
 | Ownership | A student cannot read, edit, or delete another student's courses and tasks, or attach a task to a course they don't own |
 | Shared resources | Only resources explicitly shared are visible, only to classmates in the same course **at the same university** |
+| Timetable | Class slots stay private to their owner, must end after they start, and are removed with their course |
 | Messaging | Contacts are limited to real classmates, direct messages to strangers are refused, and unread counts clear on read |
 | Group chats | Rooms are restricted to enrolled students and never leak across universities |
 | Profile & uploads | Password changes require the current password, avatars reject non-images, oversized uploads are refused |
@@ -331,6 +343,8 @@ requires a `Authorization: Bearer <token>` header.
 | `GET · POST` | `/tasks` | List / create tasks |
 | `PUT · DELETE` | `/tasks/{id}` | Update / delete a task |
 | `PATCH` | `/tasks/{id}/toggle` | Toggle completion |
+| `GET · POST` | `/lectures` | List / add weekly class slots |
+| `PUT · DELETE` | `/lectures/{id}` | Update / remove a class slot |
 | `GET · POST` | `/resources` | List / create resources |
 | `PUT · DELETE` | `/resources/{id}` | Update / delete a resource |
 | `GET` | `/shared-resources?course_id=` | Resources shared by classmates |
@@ -357,6 +371,7 @@ requires a `Authorization: Bearer <token>` header.
 | `users` | Students — university ID, name, university, country, avatar |
 | `courses` | Per-user courses, with optional grade and credits |
 | `tasks` | Assignments/exams/projects with due date, priority, attachment |
+| `lectures` | Weekly class slots — course, day, start/end time, room |
 | `resources` | Notes, links, and files per course, with a `is_shared` flag |
 | `messages` | Direct messages between two students |
 | `group_messages` | Course-room messages, keyed by course code + university |
@@ -402,7 +417,6 @@ Render, or classic cPanel shared hosting.
 ## Possible future work
 
 - Real-time messaging over WebSockets (Laravel Reverb) instead of polling
-- A weekly timetable view with lecture times and rooms
 - Exporting deadlines to Google Calendar (iCal feed)
 - Subtasks and checklists inside large projects
 - Generating a task list automatically from an uploaded syllabus

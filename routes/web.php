@@ -14,6 +14,7 @@ $pages = [
     '/dashboard'  => 'pages/dashboard.html',
     '/courses'    => 'pages/courses.html',
     '/tasks'      => 'pages/tasks.html',
+    '/timetable'  => 'pages/timetable.html',
     '/statistics' => 'pages/statistics.html',
     '/ai'         => 'pages/ai.html',
     '/messages'   => 'pages/messages.html',

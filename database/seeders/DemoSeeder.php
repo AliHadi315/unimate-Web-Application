@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Course;
 use App\Models\GroupMessage;
+use App\Models\Lecture;
 use App\Models\Message;
 use App\Models\Resource;
 use App\Models\Task;
@@ -30,6 +31,7 @@ class DemoSeeder extends Seeder
             ['full_name' => 'Omar Saad', 'university_name' => $uni, 'country' => 'Lebanon', 'password' => Hash::make('test1234')]
         );
 
+        Lecture::query()->delete();
         Task::query()->delete();
         Resource::query()->delete();
         Course::query()->delete();
@@ -70,6 +72,23 @@ class DemoSeeder extends Seeder
         $t($math, 'Quiz 2 — Eigenvalues',           'Exam',       'Medium', $d(-9), true);
         $t($eng,  'Research report outline',        'Assignment', 'Low',    $d(9));
         $t($eng,  'Peer review response',           'Assignment', 'Low',    $d(-5), true);
+
+        // Weekly class schedule (0 = Monday)
+        $l = fn ($course, $day, $start, $end, $room) => Lecture::create([
+            'user_id' => $course->user_id, 'course_id' => $course->id, 'day_of_week' => $day,
+            'start_time' => $start, 'end_time' => $end, 'room' => $room,
+        ]);
+
+        $l($web,  0, '09:00', '10:30', 'B204');
+        $l($web,  2, '09:00', '10:30', 'B204');
+        $l($web,  3, '14:00', '16:00', 'Lab 3');
+        $l($dsa,  0, '11:00', '12:30', 'A101');
+        $l($dsa,  3, '11:00', '12:30', 'A101');
+        $l($dbs,  1, '10:00', '11:30', 'B110');
+        $l($dbs,  4, '10:00', '11:30', 'B110');
+        $l($math, 1, '13:00', '14:30', 'C305');
+        $l($math, 4, '13:00', '14:30', 'C305');
+        $l($eng,  2, '15:00', '16:30', 'D12');
 
         $r = fn ($course, $title, $type, $val, $shared = false) => Resource::create([
             'user_id' => $course->user_id, 'course_id' => $course->id, 'title' => $title,

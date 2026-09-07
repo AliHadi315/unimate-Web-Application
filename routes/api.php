@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChatSessionController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\GroupChatController;
+use App\Http\Controllers\Api\LectureController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ResourceController;
@@ -20,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me',      [AuthController::class, 'me']);
     Route::apiResource('courses',        CourseController::class);
     Route::apiResource('tasks',          TaskController::class);
+    Route::apiResource('lectures',       LectureController::class);
     Route::apiResource('resources',      ResourceController::class);
     Route::apiResource('chat-sessions',  ChatSessionController::class);
     Route::patch('tasks/{task}/toggle',  [TaskController::class, 'toggle']);

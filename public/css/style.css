@@ -388,6 +388,21 @@ select.form-control{cursor:pointer}textarea.form-control{resize:vertical;min-hei
 .bubble.ai .bubble-attach{border-bottom-color:var(--border)}
 .bubble-attach svg{width:12px;height:12px;flex-shrink:0}
 
+/* ===== TIMETABLE ===== */
+.tt-scroll{overflow-x:auto}
+.tt-grid{display:grid;column-gap:8px;min-width:720px;position:relative}
+.tt-corner{grid-column:1;grid-row:1}
+.tt-day-head{text-align:center;font-family:var(--font-head);font-weight:700;font-size:.85rem;color:var(--text);padding:0 0 10px;border-bottom:2px solid var(--border);margin-bottom:8px}
+.tt-day-short{display:none}
+.tt-hour{grid-column:1;font-size:.7rem;font-weight:600;color:var(--text-3);text-align:right;padding-right:10px;transform:translateY(-6px)}
+.tt-line{border-top:1px dashed var(--border);pointer-events:none}
+.tt-class{background:var(--blue-light);border-left:3px solid var(--blue);border-radius:var(--radius-sm);padding:5px 9px;overflow:hidden;cursor:pointer;transition:all var(--t);margin:1px 0}
+.tt-class:hover{background:var(--blue-mid);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.tt-class-code{font-family:var(--font-head);font-weight:700;font-size:.78rem;color:var(--blue);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-class-time{font-size:.68rem;color:var(--text-2);line-height:1.35;white-space:nowrap}
+.tt-class-room{font-size:.66rem;color:var(--text-3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-theme="dark"] .tt-class:hover .tt-class-code{color:#fff}
+
 /* CALENDAR */
 .view-switch{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-left:auto}
 .view-btn{padding:7px 14px;border:none;background:var(--surface);color:var(--text-2);font-family:var(--font-body);font-size:.8rem;font-weight:600;cursor:pointer;transition:all var(--t)}
@@ -454,6 +469,11 @@ select.form-control{cursor:pointer}textarea.form-control{resize:vertical;min-hei
   .task-info,.resource-info{flex:1 1 60%}
   .task-actions{margin-left:auto}
   .profile-layout{grid-template-columns:1fr}
+  .tt-day-full{display:none}
+  .tt-day-short{display:inline}
+  .tt-grid{min-width:600px}
+  .tt-class{padding:4px 6px}
+
 }
 @media(max-width:480px){
   html{font-size:14px}
