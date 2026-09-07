@@ -11,6 +11,7 @@
   <img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.2+"/>
   <img src="https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?logo=javascript&logoColor=black" alt="Vanilla JS"/>
   <img src="https://img.shields.io/badge/database-SQLite-003B57?logo=sqlite&logoColor=white" alt="SQLite"/>
+  <a href="https://github.com/AliHadi315/unimateLaravelFINAAALLLLL/actions/workflows/tests.yml"><img src="https://github.com/AliHadi315/unimateLaravelFINAAALLLLL/actions/workflows/tests.yml/badge.svg" alt="Tests"/></a>
 </p>
 
 <p align="center">
@@ -41,6 +42,7 @@ no build step — to keep the course's frontend fundamentals visible in the code
 - [Screenshots](#screenshots)
 - [Tech stack](#tech-stack)
 - [Getting started](#getting-started)
+- [Running the tests](#running-the-tests)
 - [Optional: demo data](#optional-demo-data)
 - [Optional: connect a real AI model](#optional-connect-a-real-ai-model)
 - [Project structure](#project-structure)
@@ -201,6 +203,30 @@ Notes:
 - SQLite is the default, so **no database server is required** — `migrate`
   creates `database/database.sqlite` for you.
 - `storage:link` is required for profile pictures and file uploads to be served.
+
+---
+
+## Running the tests
+
+```bash
+php artisan test
+```
+
+The suite runs against an in-memory SQLite database, so it needs no setup and
+leaves your development data alone. It covers the rules that matter most —
+the ones a screenshot can't prove:
+
+| Area | What is verified |
+|---|---|
+| Authentication | Registration, duplicate university IDs, wrong passwords, token issue and revocation, passwords never stored in plain text |
+| Ownership | A student cannot read, edit, or delete another student's courses and tasks, or attach a task to a course they don't own |
+| Shared resources | Only resources explicitly shared are visible, only to classmates in the same course **at the same university** |
+| Messaging | Contacts are limited to real classmates, direct messages to strangers are refused, and unread counts clear on read |
+| Group chats | Rooms are restricted to enrolled students and never leak across universities |
+| Profile & uploads | Password changes require the current password, avatars reject non-images, oversized uploads are refused |
+
+Every push and pull request runs the same suite on GitHub Actions
+(`.github/workflows/tests.yml`).
 
 ---
 
