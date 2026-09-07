@@ -7,11 +7,17 @@
 </p>
 
 <p align="center">
+  Built by <strong>Ali Hadi Meselmani</strong> ·
+  <a href="https://www.linkedin.com/in/alihadimeselmani/">LinkedIn</a> ·
+  <a href="mailto:meselmanialihadi@gmail.com">meselmanialihadi@gmail.com</a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white" alt="Laravel 12"/>
   <img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.2+"/>
   <img src="https://img.shields.io/badge/JavaScript-vanilla-F7DF1E?logo=javascript&logoColor=black" alt="Vanilla JS"/>
   <img src="https://img.shields.io/badge/database-SQLite-003B57?logo=sqlite&logoColor=white" alt="SQLite"/>
-  <a href="https://github.com/AliHadi315/unimateLaravelFINAAALLLLL/actions/workflows/tests.yml"><img src="https://github.com/AliHadi315/unimateLaravelFINAAALLLLL/actions/workflows/tests.yml/badge.svg" alt="Tests"/></a>
+  <a href="https://github.com/AliHadi315/unimate-Web-Application/actions/workflows/tests.yml"><img src="https://github.com/AliHadi315/unimate-Web-Application/actions/workflows/tests.yml/badge.svg" alt="Tests"/></a>
 </p>
 
 <p align="center">
@@ -211,8 +217,8 @@ a slide-in sidebar, wrapping toolbars, and touch-friendly targets.
 **Requirements:** PHP 8.2+, Composer.
 
 ```bash
-git clone https://github.com/AliHadi315/unimateLaravelFINAAALLLLL.git
-cd unimateLaravelFINAAALLLLL
+git clone https://github.com/AliHadi315/unimate-Web-Application.git
+cd unimate-Web-Application
 composer install
 cp .env.example .env
 php artisan key:generate
@@ -441,4 +447,7 @@ Render, or classic cPanel shared hosting.
 
 ## Author
 
-**Ali Hadi Meselmani** — CSC 400 Web Programming, Al Maaref University.
+Built by **Ali Hadi Meselmani** — CSC 400 Web Programming, Al Maaref University.
+
+- LinkedIn: <https://www.linkedin.com/in/alihadimeselmani/>
+- Email: <meselmanialihadi@gmail.com>
